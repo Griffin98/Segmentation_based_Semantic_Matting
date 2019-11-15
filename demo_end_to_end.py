@@ -1,7 +1,6 @@
 import cv2
 import sys
 from PIL import Image
-import skimage.io
 import numpy as np
 
 import torch
@@ -98,6 +97,13 @@ def generate_trimap(segment_mask, trimap_name):
     cv2.imwrite(trimap_name, trimap)
 
 
+"""
+Deep Image Matting
+
+Predict the Alpha matte based on the input image and trimap.
+"""
+
+
 def predict_alpha(input_image, trimap_image):
     checkpoint = torch.load(DIM_MODEL, map_location=torch.device('cpu'))
     model = checkpoint['model'].module
@@ -118,9 +124,6 @@ def predict_alpha(input_image, trimap_image):
     x[0:, 0:3, :, :] = image
 
     x[0:, 3, :, :] = torch.from_numpy(trimap.copy() / 255.)
-    # print(torch.max(x[0:, 3, :, :]))
-    # print(torch.min(x[0:, 3, :, :]))
-    # print(torch.median(x[0:, 3, :, :]))
 
     # Move to GPU, if available
     x = x.type(torch.FloatTensor).to(device)
@@ -139,6 +142,13 @@ def predict_alpha(input_image, trimap_image):
     return out
 
 
+"""
+Mask R-CNN by Matterport
+
+Generate initial alpha mask from the instance segemented by Mask-RCNN as proposed in the paper.
+"""
+
+
 def predict_mask(image_name, trimap_name):
     print ("predicting mask")
     config = CocoConfig()
@@ -150,7 +160,7 @@ def predict_mask(image_name, trimap_name):
     # Load weights trained on MS-COCO
     model.load_weights(MASKRCNN_MODEL, by_name=True)
 
-    image = skimage.io.imread(image_name)
+    image = cv2.imread(image_name, cv2.IMREAD_UNCHANGED)
 
     # Run detection
     results = model.detect([image], verbose=0)
@@ -168,7 +178,10 @@ def predict_mask(image_name, trimap_name):
 
         index_position += 1
 
-    visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], class_names)
+
+"""
+Run End to End Pipeline as Proposed in the paper.
+"""
 
 
 def predict_end_to_end(input_image):
@@ -182,10 +195,10 @@ def predict_end_to_end(input_image):
     output_name = output_path + "output_stage[0]_" + str(file) + ".png"
     cv2.imwrite(output_name, alpha)
 
+    # Feedback Stage
     for i in range(5, 1, -1):
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (i - 1, i - 1))
         fg = np.array(np.equal(alpha, 255).astype(np.float32))
-        # fg = cv.erode(fg, kernel, iterations=np.random.randint(1, 3))
         unknown = np.array(np.not_equal(alpha, 0).astype(np.float32))
         unknown = cv2.dilate(unknown, kernel, iterations=1)
         trimap = fg * 255 + (unknown - fg) * 128
