@@ -4,6 +4,7 @@ This repository is unofficial implementation of paper **Instance Segmentation ba
 
 Final Results of segmenatation are great, but not as good as the results proposed in the paper.
 
+![Results](https://github.com/Griffin98/Automatic-Background-Removal/raw/master/Results.png)
 
 ### ToDo:
 - OOPs Class Design
