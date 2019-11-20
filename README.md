@@ -1,4 +1,4 @@
-# Automatic-Background-Removal [WIP]
+# Segmantation_based_Semantic_Matting [WIP]
 
 This repository is unofficial implementation of paper **Instance Segmentation based Semantic Matting for Compositing Applications**(https://arxiv.org/abs/1904.05457)
 
