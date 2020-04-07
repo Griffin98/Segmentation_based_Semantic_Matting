@@ -6,6 +6,9 @@ Final Results of segmenatation are great, but not as good as the results propose
 
 ![Results](https://github.com/Griffin98/Automatic-Background-Removal/raw/master/Results.png)
 
+### Update ( April 7, 2020 )
+I will start working on this soon, and will implement whole todo list. PS: I have stumble upon some ways to improve accuracy. Will try to implement those.
+
 ### ToDo:
 - OOPs Class Design
 - Improve Trimap Generation
